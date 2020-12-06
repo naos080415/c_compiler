@@ -45,10 +45,17 @@ bool consume(char *op)
     return true;
 }
 
+bool consume_word(char *op)
+{
+    if(memcmp(token->str,op,token->len))
+        return false;
+    token = token->next;
+    return true;
+}
+
 /* トークンがidentであるかどうかを調べる */
 Token *consume_ident()
 {
-
     if(token->kind != TK_IDENT)
         return NULL;
     
@@ -146,12 +153,12 @@ Token *tokenize()
 
         // 変数があったとき
         if('a' <= *p && *p <= 'z'){
-            int i;
-            for(i = 0;'a' <= *(p+i) && *(p+i) <= 'z';i++)
-               ;
-            
-            cur = new_token(TK_IDENT,cur,p,i+1);
-            p += (i+1);
+            char *q = p;
+            while('a' <= *q && *q <= 'z')
+                q++;
+            int len = q - p;
+            cur = new_token(TK_IDENT,cur,p,len);
+            p = q;
             continue;
         }
         

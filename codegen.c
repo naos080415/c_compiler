@@ -17,26 +17,34 @@ void gen_lval(Node *node)
 
 void gen(Node *node)
 {
-
     switch (node->kind){
         case ND_NUM:
+            printf("#   ND_NUM\n");
             printf("    push %d\n",node->val);
             return;
-
-        case ND_LVAR:
+        case ND_LVAR:   // 変数
+            printf("#   ND_LVAR\n");
             gen_lval(node);
             printf("    pop rax\n");
             printf("    mov rax, [rax]\n");
             printf("    push rax\n");
             return;
-        case ND_ASSIGN:
+        case ND_ASSIGN:     // =
+            printf("#   ND_ASSIGN;\n");
             gen_lval(node->lhs);
             gen(node->rhs);
-
             printf("    pop rdi\n");
             printf("    pop rax\n");
             printf("    mov [rax], rdi\n");
             printf("    push rdi\n");
+            return;
+        case ND_RETURN:     // return
+            printf("#   ND_RETURN\n");
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    mov rsp, rbp\n");
+            printf("    pop rbp\n");
+            printf("    ret\n");
             return;
     }
 
@@ -85,6 +93,7 @@ void gen(Node *node)
     printf("    push rax\n");
 }
  
+ 
 Node *new_node(NodeKind kind)
 {
     Node *node = calloc(1,sizeof(Node));
@@ -116,11 +125,20 @@ void program()
     code[i] = NULL;
 }
 
-// stmt       = expr ";"
+// stmt       = expr ";" | return expr ";"
 Node *stmt()
 {
-    Node *node = expr();
+    Node *node;
+    if(consume_word("return")){
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_RETURN;
+        node->lhs = expr();
+    }else{
+        node = expr();
+    }
+    // 文の終わりの判断
     expect(";");
+
     return node;
 }
 

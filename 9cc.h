@@ -36,6 +36,7 @@ typedef enum {
     ND_NE,      // !=
     ND_LT,      // <
     ND_LE,      // <=
+    ND_RETURN,  // return
     ND_NUM,     // 整数
 } NodeKind;
 
@@ -78,6 +79,7 @@ void error_at(char *loc,char *fmt, ...);
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進めて
     真を返す.それ以外の場合には偽をかえす */
 bool consume(char *op);
+bool consume_word(char *op);
 Token *consume_ident();
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進める.
     それ以外の場合にはエラーを報告する */
