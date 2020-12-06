@@ -85,7 +85,6 @@ void gen(Node *node)
     printf("    push rax\n");
 }
  
- 
 Node *new_node(NodeKind kind)
 {
     Node *node = calloc(1,sizeof(Node));

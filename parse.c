@@ -7,7 +7,6 @@ Token *token;
 // 入力プログラム
 char *user_input;
 
-
 /* エラーを報告するための関数
     printfと同じ引数を取る */
 void error_at(char *loc,char *fmt, ...)

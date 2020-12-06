@@ -90,7 +90,6 @@ LVar *find_lvar(Token *tok);        // 変数名の検索(以前に定義され�
 Token *new_token(TokenKind kind,Token *cur,char *str,int len);   // 新しいトークンを作成してcurにつなげる 
 Token *tokenize();   // 入力文字列pをトークナイズしてそれを返す
 
-
 // プロトタイプ宣言(codegen.c)
 /* エラーを報告するための関数
     printfと同じ引数を取る */

@@ -25,7 +25,6 @@ int main(int argc,char **argv)
     printf("    mov rbp, rsp\n");
     printf("    sub rsp, 208\n");
 
-
     // 先頭の式から順にコード生成
     for(int i = 0;code[i];i++){
         gen(code[i]);
