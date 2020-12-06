@@ -50,6 +50,17 @@ struct Node {
     int offset;     // kindがND_LVARの場合のみ使う
 };
 
+typedef struct LVar LVar;
+
+// ローカル変数の型
+struct LVar {
+    LVar *next;     // 次の変数,ない場合:NULL
+    char *name;     // 変数名
+    int len;        // 変数名の長さ
+    int offset;     // RBPからのオフセット
+};
+
+
 // 現在着目しているトークン
 extern Token *token;
 
@@ -57,6 +68,9 @@ extern Token *token;
 extern  char *user_input;
 
 extern Node *code[100];
+
+// ローカル変数
+extern LVar *locals;
 
 // プロトタイプ宣言(parse.c)
 void error(char *fmt, ...);
@@ -72,6 +86,7 @@ void expect(char *op);
     それ以外の場合にはエラーを報告する. */
 int expect_number();
 bool at_eof();
+LVar *find_lvar(Token *tok);        // 変数名の検索(以前に定義されていないかどうか)
 Token *new_token(TokenKind kind,Token *cur,char *str,int len);   // 新しいトークンを作成してcurにつなげる 
 Token *tokenize();   // 入力文字列pをトークナイズしてそれを返す
 

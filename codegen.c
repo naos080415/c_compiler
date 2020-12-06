@@ -2,6 +2,8 @@
 
 Node *code[100];
 
+// ローカル変数
+LVar *locals;
 
 void gen_lval(Node *node)
 {
@@ -20,6 +22,7 @@ void gen(Node *node)
         case ND_NUM:
             printf("    push %d\n",node->val);
             return;
+
         case ND_LVAR:
             gen_lval(node);
             printf("    pop rax\n");
@@ -219,12 +222,35 @@ Node *primary()
         expect(")");
         return node;
     }
-
+    
+    // Token *tok = consume_ident();
+    // if(tok){    // 数字でなければ
+    //     Node *node = calloc(1,sizeof(Node));
+    //     node->kind = ND_LVAR;
+    //     node->offset = (tok->str[0]-'a'+1)*8;
+    //     return node;
+    // }
     Token *tok = consume_ident();
     if(tok){    // 数字でなければ
         Node *node = calloc(1,sizeof(Node));
         node->kind = ND_LVAR;
-        node->offset = (tok->str[0]-'a'+1)*8;
+        
+        LVar *lvar = find_lvar(tok);
+
+        if(lvar){
+            node->offset = lvar->offset;
+        }else{
+            lvar = calloc(1,sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = tok->str;
+            lvar->len = tok->len;
+            if( locals == NULL )
+                lvar->offset = 8;
+            else
+                lvar->offset = locals->offset + 8;
+            node->offset = lvar->offset;
+            locals = lvar;
+        }
         return node;
     }
 

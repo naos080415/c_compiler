@@ -43,4 +43,7 @@ assert 0 '1>=2;'
 assert 14 "a = 3;
 b = 5 * 6 - 8;
 a + b / 2;"
+assert 14 "foo = 3;
+var = 5 * 6 - 8;
+foo + var / 2;"
 echo OK
