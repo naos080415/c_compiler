@@ -54,5 +54,9 @@ assert 3 "a = 3;
 if( a == 3 ) return a;
 return 5;
 "
+assert 3 "a = 0;
+while( a != 3 ) a = a + 1;
+return a;
+"
 
 echo OK

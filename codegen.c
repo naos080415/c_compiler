@@ -47,6 +47,21 @@ void gen(Node *node)
             gen(node->rhs);
             printf(".LendXXX:\n");
             return;
+        case ND_WHILE:
+            printf("#   ND_WHILE\n");
+            printf(".LbeginXXX:\n");
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je .LendXXX\n");
+            gen(node->rhs);
+            printf("    jmp .LbeginXXX\n");
+            printf(".LendXXX:\n");
+            return;
+        case ND_FOR:
+            printf("#   ND_FOR\n");
+            
+            return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
             gen(node->lhs);
@@ -141,9 +156,18 @@ void program()
 Node *stmt()
 {
     Node *node;
+    
     if(consume_word("if")){
         node = calloc(1,sizeof(Node));
         node->kind = ND_IF;
+        expect("(");
+        node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
+        return node;
+    }else if(consume_word("while")){
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_WHILE;
         expect("(");
         node->lhs = expr();
         expect(")");
