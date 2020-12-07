@@ -16,7 +16,6 @@ assert() {
   fi
 }
 
-
 assert 0 "0;"
 assert 42 "42;"
 assert 21 "5 +20-4;"
@@ -61,5 +60,14 @@ assert 3 "a = 0;
 while( a != 3 ) a = a + 1;
 return a;
 "
+assert 3 "a = 3;
+if( a == 3 ) return 3;
+else return 0;
+"
+assert 0 "a = 5;
+if( a == 3 ) return 3;
+else return 0;
+"
+
 
 echo OK

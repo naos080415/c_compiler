@@ -43,9 +43,24 @@ void gen(Node *node)
             gen(node->lhs);
             printf("    pop rax\n");
             printf("    cmp rax, 0\n");
-            printf("    je .LendXXX\n");
-            gen(node->rhs);
-            printf(".LendXXX:\n");
+            
+            if( node->rhs->kind == ND_ELSE ){
+                printf("#   ND_ELSE\n");
+                printf("    je .LelseXXX\n");
+            }else{
+                printf("    je .LendXXX\n");
+            }
+
+            if( node->rhs->kind == ND_ELSE ){
+                gen(node->rhs->lhs);
+                printf("    jmp .LendXXX\n");
+                printf(".LelseXXX:\n");
+                gen(node->rhs->rhs);
+                printf(".LendXXX:\n");
+            }else{
+                gen(node->rhs);
+                printf(".LendXXX:\n");
+            }
             return;
         case ND_WHILE:
             printf("#   ND_WHILE\n");
@@ -161,6 +176,13 @@ Node *stmt()
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
+        if(consume_keyword(TK_ELSE)){
+            Node *els = new_node(ND_ELSE);
+            /* elsを作成し,nodeにつなげる. */
+            els->lhs = node->rhs;
+            els->rhs = stmt();
+            node->rhs = els;
+        }
         return node;
     }else if(consume_keyword(TK_WHILE)){
         node = new_node(ND_WHILE);
