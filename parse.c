@@ -41,6 +41,25 @@ int is_alnum(char c) {
          (c == '_');
 }
 
+// 制御構文であるかどうかの判定
+int contorl_syntax(char *p)
+{
+    int i,len;
+    char *consys_word[5] = {
+        "if",
+        "else",
+        "while",
+        "for",
+        "return",
+    };
+    for(i = 0;i<5;i++){
+        len = strlen(consys_word[i]);
+        if(!strncmp(p,consys_word[i],len) && !is_alnum(p[len]))
+            return len;
+    }
+    return 0;
+}
+
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進めて
     真を返す.それ以外の場合には偽をかえす */
 bool consume(char *op)
@@ -52,9 +71,9 @@ bool consume(char *op)
     return true;
 }
 
-bool consume_keyword(TokenKind kind)
+bool consume_keyword(char *op)
 {
-    if( token->kind != kind )
+    if( token->kind != TK_CONSYS || memcmp(token->str,op,token->len) )
         return false;
     token = token->next;
     return true;
@@ -143,7 +162,7 @@ Token *tokenize()
         }
 
         // 1つの記号の演算子
-        if(strchr("+-*/=()<>;",*p)){
+        if(strchr("+-*/=()<>;{}",*p)){
             cur = new_token(TK_RESERVED,cur,p,1);
             p++;
             continue;
@@ -158,38 +177,11 @@ Token *tokenize()
             continue;
         }
 
-        // return
-        if( !strncmp(p,"return",6) && !is_alnum(p[6])){
-            cur = new_token(TK_RETURN,cur,p,6);
-            p += 6;
-            continue;
-        }
-
-        // if
-        if( !strncmp(p,"if",2) && !is_alnum(p[2])){
-            cur = new_token(TK_IF,cur,p,2);
-            p += 2;
-            continue;
-        }
-        
-        // else
-        if( !strncmp(p,"else",4) && !is_alnum(p[4])){
-            cur = new_token(TK_ELSE,cur,p,4);
-            p += 4;
-            continue;
-        }
-
-        // while
-        if( !strncmp(p,"while",5) && !is_alnum(p[5])){
-            cur = new_token(TK_WHILE,cur,p,5);
-            p += 5;
-            continue;
-        }
-
-        // for
-        if( !strncmp(p,"for",3) && !is_alnum(p[3])){
-            cur = new_token(TK_FOR,cur,p,3);
-            p += 3;
+        // // 制御構文(if,else,while,for,return)
+        int len = contorl_syntax(p);
+        if(len != 0){
+            cur = new_token(TK_CONSYS,cur,p,len);
+            p += len;
             continue;
         }
 

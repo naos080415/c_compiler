@@ -10,10 +10,7 @@ typedef enum {
     TK_RESERVED,    // 記号
     TK_IDENT,       // 識別子
     TK_NUM,         // 整数トークン
-    TK_IF,          // if
-    TK_ELSE,        // else
-    TK_WHILE,       // while
-    TK_FOR,         // for
+    TK_CONSYS,      // 制御構文(if,else,while,for)
     TK_RETURN,      // return    
     TK_EOF,         // 入力の終わりを表すトークン
 } TokenKind;
@@ -41,6 +38,7 @@ typedef enum {
     ND_NE,      // !=
     ND_LT,      // <
     ND_LE,      // <=
+    ND_BLOCK,   // { or }
     ND_IF,      // if
     ND_ELSE,    // else
     ND_WHILE,   // while
@@ -86,10 +84,12 @@ extern LVar *locals;
 void error(char *fmt, ...);
 void error_at(char *loc,char *fmt, ...);
 int is_alnum(char c);
+// 制御構文であるかどうかの判定
+int contorl_syntax(char *p);
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進めて
     真を返す.それ以外の場合には偽をかえす */
 bool consume(char *op);
-bool consume_keyword(TokenKind kind);
+bool consume_keyword(char *op);
 Token *consume_ident();
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進める.
     それ以外の場合にはエラーを報告する */

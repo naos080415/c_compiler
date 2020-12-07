@@ -180,13 +180,13 @@ Node *stmt()
 {
     Node *node;
     
-    if(consume_keyword(TK_IF)){
+    if(consume_keyword("if")){
         node = new_node(ND_IF);
         expect("(");
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
-        if(consume_keyword(TK_ELSE)){
+        if(consume_keyword("else")){
             Node *els = new_node(ND_ELSE);
             /* elsを作成し,nodeにつなげる. */
             els->lhs = node->rhs;
@@ -194,14 +194,14 @@ Node *stmt()
             node->rhs = els;
         }
         return node;
-    }else if(consume_keyword(TK_WHILE)){
+    }else if(consume_keyword("while")){
         node = new_node(ND_WHILE);
         expect("(");
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
         return node;
-    }else if(consume_keyword(TK_FOR)){
+    }else if(consume_keyword("for")){
         node = new_node(ND_FOR);
         Node *left = calloc(1,sizeof(Node));
         Node *right = calloc(1,sizeof(Node));
@@ -217,7 +217,7 @@ Node *stmt()
         node->lhs = left;
         node->rhs = right;
         return node;
-    }else if(consume_keyword(TK_RETURN)){
+    }else if(consume_keyword("return")){
         node = new_node(ND_RETURN);
         node->lhs = expr();
     }else{
