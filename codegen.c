@@ -38,6 +38,15 @@ void gen(Node *node)
             printf("    mov [rax], rdi\n");
             printf("    push rdi\n");
             return;
+        case ND_IF:         // if
+            printf("#   ND_IF\n");
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je .LendXXX\n");
+            gen(node->rhs);
+            printf(".LendXXX:\n");
+            return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
             gen(node->lhs);
@@ -46,6 +55,7 @@ void gen(Node *node)
             printf("    pop rbp\n");
             printf("    ret\n");
             return;
+        
     }
 
     gen(node->lhs);
@@ -125,11 +135,21 @@ void program()
     code[i] = NULL;
 }
 
-// stmt       = expr ";" | return expr ";"
+/* stmt       = expr ";" | "if" "(" expr ")" stmt ("else" stmt)?
+    "while" "(" expr ")" stmt   | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
+|   return expr ";" */
 Node *stmt()
 {
     Node *node;
-    if(consume_word("return")){
+    if(consume_word("if")){
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_IF;
+        expect("(");
+        node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
+        return node;
+    }else if(consume_word("return")){
         node = calloc(1,sizeof(Node));
         node->kind = ND_RETURN;
         node->lhs = expr();

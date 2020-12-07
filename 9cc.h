@@ -36,6 +36,9 @@ typedef enum {
     ND_NE,      // !=
     ND_LT,      // <
     ND_LE,      // <=
+    ND_IF,      // if
+    ND_WHILE,   // while
+    ND_FOR,     // for
     ND_RETURN,  // return
     ND_NUM,     // 整数
 } NodeKind;

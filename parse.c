@@ -151,7 +151,7 @@ Token *tokenize()
             continue;
         }
 
-        // 変数があったとき
+        // 変数,演算子があったとき
         if('a' <= *p && *p <= 'z'){
             char *q = p;
             while('a' <= *q && *q <= 'z')
