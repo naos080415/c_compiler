@@ -73,8 +73,18 @@ void gen(Node *node)
             printf("    jmp .LbeginXXX\n");
             printf(".LendXXX:\n");
             return;
-        case ND_FOR:
+        case ND_FOR:    // for
             printf("#   ND_FOR\n");
+            gen(node->lhs->lhs);        // 初期条件
+            printf(".LbeginXXX:\n");
+            gen(node->lhs->rhs);        // 継続条件
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je .LendXXX\n");
+            gen(node->rhs->rhs);         // 処理内容
+            gen(node->rhs->lhs);        // 増分
+            printf("    jmp .LbeginXXX\n");
+            printf(".LendXXX:\n");
             return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
@@ -192,7 +202,21 @@ Node *stmt()
         node->rhs = stmt();
         return node;
     }else if(consume_keyword(TK_FOR)){
-
+        node = new_node(ND_FOR);
+        Node *left = calloc(1,sizeof(Node));
+        Node *right = calloc(1,sizeof(Node));
+        expect("(");
+        left->lhs = expr();     // 初期条件
+        expect(";");
+        left->rhs = expr();     // 継続条件
+        expect(";");
+        right->lhs = expr();    // 増分
+        expect(")");
+        right->rhs = stmt();    // 処理内容
+        // ノードにつなげる.
+        node->lhs = left;
+        node->rhs = right;
+        return node;
     }else if(consume_keyword(TK_RETURN)){
         node = new_node(ND_RETURN);
         node->lhs = expr();
