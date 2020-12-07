@@ -34,6 +34,12 @@ void error(char *fmt, ...)
     exit(1);
 }
 
+int is_alnum(char c) {
+  return ('a' <= c && c <= 'z') ||
+         ('A' <= c && c <= 'Z') ||
+         ('0' <= c && c <= '9') ||
+         (c == '_');
+}
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進めて
     真を返す.それ以外の場合には偽をかえす */
 bool consume(char *op)
@@ -45,9 +51,9 @@ bool consume(char *op)
     return true;
 }
 
-bool consume_word(char *op)
+bool consume_keyword(TokenKind kind)
 {
-    if(memcmp(token->str,op,token->len))
+    if( token->kind != kind )
         return false;
     token = token->next;
     return true;
@@ -151,7 +157,42 @@ Token *tokenize()
             continue;
         }
 
-        // 変数,演算子があったとき
+        // return
+        if( !strncmp(p,"return",6) && !is_alnum(p[6])){
+            cur = new_token(TK_RETURN,cur,p,6);
+            p += 6;
+            continue;
+        }
+
+        // if
+        if( !strncmp(p,"if",2) && !is_alnum(p[2])){
+            cur = new_token(TK_IF,cur,p,2);
+            p += 2;
+            continue;
+        }
+        
+        // else
+        if( !strncmp(p,"else",4) && !is_alnum(p[4])){
+            cur = new_token(TK_ELSE,cur,p,4);
+            p += 4;
+            continue;
+        }
+
+        // while
+        if( !strncmp(p,"while",5) && !is_alnum(p[5])){
+            cur = new_token(TK_WHILE,cur,p,5);
+            p += 5;
+            continue;
+        }
+
+        // for
+        if( !strncmp(p,"for",3) && !is_alnum(p[3])){
+            cur = new_token(TK_FOR,cur,p,3);
+            p += 3;
+            continue;
+        }
+
+        // 変数があったとき
         if('a' <= *p && *p <= 'z'){
             char *q = p;
             while('a' <= *q && *q <= 'z')

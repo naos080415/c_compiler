@@ -60,7 +60,6 @@ void gen(Node *node)
             return;
         case ND_FOR:
             printf("#   ND_FOR\n");
-            
             return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
@@ -70,7 +69,6 @@ void gen(Node *node)
             printf("    pop rbp\n");
             printf("    ret\n");
             return;
-        
     }
 
     gen(node->lhs);
@@ -157,32 +155,31 @@ Node *stmt()
 {
     Node *node;
     
-    if(consume_word("if")){
-        node = calloc(1,sizeof(Node));
-        node->kind = ND_IF;
+    if(consume_keyword(TK_IF)){
+        node = new_node(ND_IF);
         expect("(");
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
         return node;
-    }else if(consume_word("while")){
-        node = calloc(1,sizeof(Node));
-        node->kind = ND_WHILE;
+    }else if(consume_keyword(TK_WHILE)){
+        node = new_node(ND_WHILE);
         expect("(");
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
         return node;
-    }else if(consume_word("return")){
-        node = calloc(1,sizeof(Node));
-        node->kind = ND_RETURN;
+    }else if(consume_keyword(TK_FOR)){
+
+    }else if(consume_keyword(TK_RETURN)){
+        node = new_node(ND_RETURN);
         node->lhs = expr();
     }else{
         node = expr();
     }
+
     // 文の終わりの判断
     expect(";");
-
     return node;
 }
 
@@ -234,6 +231,7 @@ Node *relational()
             return node;
     }
 }
+
 // add        = mul ("+" mul | "-" mul)*
 Node *add()
 {
@@ -284,13 +282,6 @@ Node *primary()
         return node;
     }
     
-    // Token *tok = consume_ident();
-    // if(tok){    // 数字でなければ
-    //     Node *node = calloc(1,sizeof(Node));
-    //     node->kind = ND_LVAR;
-    //     node->offset = (tok->str[0]-'a'+1)*8;
-    //     return node;
-    // }
     Token *tok = consume_ident();
     if(tok){    // 数字でなければ
         Node *node = calloc(1,sizeof(Node));

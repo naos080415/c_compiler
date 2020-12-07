@@ -43,13 +43,16 @@ assert 1 '1>=1;'
 assert 0 '1>=2;'
 assert 14 "a = 3;
 b = 5 * 6 - 8;
-a + b / 2;"
+a + b / 2;
+"
 assert 14 "foo = 3;
 var = 5 * 6 - 8;
-foo + var / 2;"
+foo + var / 2;
+"
 assert 14 "a = 3;
 b = 5 * 6 - 8;
-return a + b / 2;"
+return a + b / 2;
+"
 assert 3 "a = 3;
 if( a == 3 ) return a;
 return 5;
