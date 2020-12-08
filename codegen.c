@@ -5,6 +5,9 @@ Node *code[100];
 // ローカル変数
 LVar *locals;
 
+int label_cnt = 0;      // ラベルの通し番号
+char *label_name;   // 通し番号を文字列に変換
+
 void gen_lval(Node *node)
 {
     if(node->kind != ND_LVAR)
@@ -85,6 +88,11 @@ void gen(Node *node)
             gen(node->rhs->lhs);        // 増分
             printf("    jmp .LbeginXXX\n");
             printf(".LendXXX:\n");
+            return;
+        case ND_BLOCK:      // { }
+            printf("#   NL_BLOCK\n");
+            gen(node->rhs);
+            printf("    pop rax\n");
             return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
@@ -175,7 +183,7 @@ void program()
 
 /* stmt       = expr ";" | "if" "(" expr ")" stmt ("else" stmt)?
     "while" "(" expr ")" stmt   | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
-|   return expr ";" */
+|   | "{" stmt* "}" | return expr ";" */
 Node *stmt()
 {
     Node *node;
@@ -220,6 +228,11 @@ Node *stmt()
     }else if(consume_keyword("return")){
         node = new_node(ND_RETURN);
         node->lhs = expr();
+    }else if(consume("{")){
+        while(!consume("}")){
+            node = new_binary(ND_BLOCK,node,stmt());
+        }
+        return node;
     }else{
         node = expr();
     }

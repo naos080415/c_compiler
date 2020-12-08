@@ -71,6 +71,14 @@ else return 0;
 assert 5 "for(a=0;a<5;a=a+1) b = 0;
 return a;
 "
-
+assert 5 "for(a=0;a<5;a=a+1){b=0;c=0;}
+return a;
+"
+assert 5 "b = 0;for(a=0;a<5;a=a+1){a=0;b = 3;c=5;d=8;}
+return 5;
+"
+assert 0 "b = 0;for(a=0;a<5;a=a+1){b=0;}
+return b;
+"
 
 echo OK
