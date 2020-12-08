@@ -48,6 +48,19 @@ void gen(Node *node)
             printf("    mov [rax], rdi\n");
             printf("    push rdi\n");
             return;
+        case ND_FUNC:       // 関数 
+            printf("    call ");
+            char *p = node->name_func;
+            char q;
+            for(;;){
+                q = *p;
+                if(q == '(')
+                    break;
+                printf("%c",q);
+                p++;
+            }
+            printf("\n");
+            return;
         case ND_IF:         // if
             printf("#   ND_IF\n");
 
@@ -361,38 +374,49 @@ Node *unary()
     return primary();
 }
 
-// primary    = num | ident | "(" expr ")"
+
+// primary    = num | ident "(" expr ")"?  |  "(" expr ")"
 Node *primary()
 {
+    Node *node;
+    
     if(consume("(")){
         // 次のトークンが"("なら,"(" expr ")"のはず 
-        Node *node = expr();
+        node = expr();
         expect(")");
         return node;
     }
     
     Token *tok = consume_ident();
     if(tok){    // 数字でなければ
-        Node *node = calloc(1,sizeof(Node));
-        node->kind = ND_LVAR;
-        
-        LVar *lvar = find_lvar(tok);
-
-        if(lvar){
-            node->offset = lvar->offset;
+        if(consume("(")){
+            // identのあとに ( があると関数とみなす.
+            node = new_node(ND_FUNC);
+            node->name_func = tok->str;
+            // ここに引数が入るよ.(最大6個)
+            expect(")");
+            return node;
         }else{
-            lvar = calloc(1,sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = tok->str;
-            lvar->len = tok->len;
-            if( locals == NULL )
-                lvar->offset = 8;
-            else
-                lvar->offset = locals->offset + 8;
-            node->offset = lvar->offset;
-            locals = lvar;
+            // identのあとに ( がない場合,変数とみなす.
+            node = new_node(ND_LVAR);     
+            LVar *lvar = find_lvar(tok);
+
+            if(lvar){
+                node->offset = lvar->offset;
+            }else{
+                lvar = calloc(1,sizeof(LVar));
+                lvar->next = locals;
+                lvar->name = tok->str;
+                lvar->len = tok->len;
+                if( locals == NULL )
+                    lvar->offset = 8;
+                else
+                    lvar->offset = locals->offset + 8;
+                node->offset = lvar->offset;
+                locals = lvar;
+            }
+            return node;
         }
-        return node;
     }
 
     // そうでなければ数値のはず

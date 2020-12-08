@@ -84,4 +84,6 @@ return b;
 assert 10 "b = 0;for(a=0;a<5;a=a+1){if(a==3)b=10;}
 return b;
 "
+assert 100 "foo();"
+
 echo OK

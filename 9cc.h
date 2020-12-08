@@ -44,6 +44,7 @@ typedef enum {
     ND_WHILE,   // while
     ND_FOR,     // for
     ND_RETURN,  // return
+    ND_FUNC,    // 関数
     ND_NUM,     // 整数
 } NodeKind;
 
@@ -54,6 +55,7 @@ struct Node {
     NodeKind kind;  // ノードの型
     Node *lhs;      // 左辺
     Node *rhs;      // 右辺
+    char *name_func;    // kindがND_FUNCの場合のみ使う(一時的に作成する・後で削除予定)
     int val;        // kindがND_NUMの場合のみ使う
     int offset;     // kindがND_LVARの場合のみ使う
 };
@@ -73,7 +75,7 @@ typedef enum{
     LV_WHILE,
     LV_FOR,
     LV_END,
-}Label_keyword;
+} Label_keyword;
 
 // 現在着目しているトークン
 extern Token *token;
