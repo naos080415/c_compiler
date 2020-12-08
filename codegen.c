@@ -5,8 +5,8 @@ Node *code[100];
 // ローカル変数
 LVar *locals;
 
-int label_cnt = 0;      // ラベルの通し番号
-char *label_name;   // 通し番号を文字列に変換
+char label_name[10];
+int label_cnt[LV_END];      // ラベルの通し番号
 
 void gen_lval(Node *node)
 {
@@ -16,6 +16,13 @@ void gen_lval(Node *node)
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n",node->offset);
     printf("    push rax\n");
+}
+
+char *lavel_contorl(Label_keyword kind)
+{
+    int num = label_cnt[kind];
+    sprintf(label_name,"%d",num);
+    return label_name;
 }
 
 void gen(Node *node)
@@ -33,7 +40,7 @@ void gen(Node *node)
             printf("    push rax\n");
             return;
         case ND_ASSIGN:     // =
-            printf("#   ND_ASSIGN;\n");
+            printf("#   ND_ASSIGN\n");
             gen_lval(node->lhs);
             gen(node->rhs);
             printf("    pop rdi\n");
@@ -43,51 +50,74 @@ void gen(Node *node)
             return;
         case ND_IF:         // if
             printf("#   ND_IF\n");
+
             gen(node->lhs);
             printf("    pop rax\n");
             printf("    cmp rax, 0\n");
             
             if( node->rhs->kind == ND_ELSE ){
                 printf("#   ND_ELSE\n");
-                printf("    je .LelseXXX\n");
-            }else{
-                printf("    je .LendXXX\n");
+                printf("    je .Lelse");
+                printf("%s\n",lavel_contorl(LV_IF));
+            }else{         
+                printf("    je .Lend");            
+                printf("%s\n",lavel_contorl(LV_IF));
             }
 
             if( node->rhs->kind == ND_ELSE ){
                 gen(node->rhs->lhs);
-                printf("    jmp .LendXXX\n");
-                printf(".LelseXXX:\n");
+                printf("    jmp .Lend");
+                printf("%s\n",lavel_contorl(LV_IF));
+
+                printf(".Lelse");
+                printf("%s:\n",lavel_contorl(LV_IF));
+
                 gen(node->rhs->rhs);
-                printf(".LendXXX:\n");
+                printf(".Lend");
+                printf("%s:\n",lavel_contorl(LV_IF));
+
             }else{
                 gen(node->rhs);
-                printf(".LendXXX:\n");
+                printf(".Lend");
+                printf("%s:\n",lavel_contorl(LV_IF));
             }
+            *(label_cnt+LV_IF) = *(label_cnt+LV_IF) + 1;
             return;
         case ND_WHILE:
             printf("#   ND_WHILE\n");
-            printf(".LbeginXXX:\n");
+
+            printf(".Lbegin");
+            printf("%s:\n",lavel_contorl(LV_WHILE));
             gen(node->lhs);
             printf("    pop rax\n");
             printf("    cmp rax, 0\n");
-            printf("    je .LendXXX\n");
+            printf("    je .Lend");
+            printf("%s\n",lavel_contorl(LV_WHILE));
             gen(node->rhs);
-            printf("    jmp .LbeginXXX\n");
-            printf(".LendXXX:\n");
+            printf("    jmp .Lbegin");
+            printf("%s\n",lavel_contorl(LV_WHILE));
+            printf(".Lend");
+            printf("%s:\n",lavel_contorl(LV_WHILE));
+            *(label_cnt+LV_FOR) = *(label_cnt+LV_FOR) + 1;
             return;
         case ND_FOR:    // for
             printf("#   ND_FOR\n");
+
             gen(node->lhs->lhs);        // 初期条件
-            printf(".LbeginXXX:\n");
+            printf(".Lbegin");
+            printf("%s:\n",lavel_contorl(LV_FOR));
             gen(node->lhs->rhs);        // 継続条件
             printf("    pop rax\n");
             printf("    cmp rax, 0\n");
-            printf("    je .LendXXX\n");
+            printf("    je .Lend");
+            printf("%s\n",lavel_contorl(LV_FOR));
             gen(node->rhs->rhs);         // 処理内容
             gen(node->rhs->lhs);        // 増分
-            printf("    jmp .LbeginXXX\n");
-            printf(".LendXXX:\n");
+            printf("    jmp .Lbegin");
+            printf("%s\n",lavel_contorl(LV_FOR));
+            printf(".Lend");
+            printf("%s:\n",lavel_contorl(LV_FOR));
+            *(label_cnt+LV_FOR) = *(label_cnt+LV_FOR) + 1;
             return;
         case ND_BLOCK:      // { }
             printf("#   NL_BLOCK\n");
@@ -125,24 +155,24 @@ void gen(Node *node)
             printf("    idiv rdi\n");
             break;
         case ND_EQ:
-            printf("  cmp rax, rdi\n");
-            printf("  sete al\n");
-            printf("  movzb rax, al\n");
+            printf("    cmp rax, rdi\n");
+            printf("    sete al\n");
+            printf("    movzb rax, al\n");
             break;
         case ND_NE:
-            printf("  cmp rax, rdi\n");
-            printf("  setne al\n");
-            printf("  movzb rax, al\n");
+            printf("    cmp rax, rdi\n");
+            printf("    setne al\n");
+            printf("    movzb rax, al\n");
             break;
         case ND_LT:
-            printf("  cmp rax, rdi\n");
-            printf("  setl al\n");
-            printf("  movzb rax, al\n");
+            printf("    cmp rax, rdi\n");
+            printf("    setl al\n");
+            printf("    movzb rax, al\n");
             break;
         case ND_LE:
-            printf("  cmp rax, rdi\n");
-            printf("  setle al\n");
-            printf("  movzb rax, al\n");
+            printf("    cmp rax, rdi\n");
+            printf("    setle al\n");
+            printf("    movzb rax, al\n");
             break;
     }
 

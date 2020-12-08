@@ -1,8 +1,16 @@
 #include "9cc.h"
 
+void init()
+{
+    for(int i = 0;i < LV_END;i++){
+        label_cnt[i] = (i*100);
+    }
+}
 
 int main(int argc,char **argv)
 {
+    init();     // 初期設定
+
     if(argc != 2){
         fprintf(stderr,"引数の個数が正しくありません\n");
         return 1;
@@ -14,7 +22,7 @@ int main(int argc,char **argv)
     user_input = argv[1];
     token = tokenize();
     program();
-
+    
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
     printf(".globl main\n");
