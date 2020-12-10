@@ -27,6 +27,7 @@ char *lavel_contorl(Label_keyword kind)
 
 void gen(Node *node)
 {
+    if(!node) return;
     switch (node->kind){
         case ND_NUM:
             printf("#   ND_NUM\n");
@@ -49,6 +50,23 @@ void gen(Node *node)
             printf("    push rdi\n");
             return;
         case ND_FUNC:       // 関数 
+            if(node->lhs->lhs != NULL){
+                gen(node->lhs->lhs);
+                printf("    pop rdi\n");
+            }
+            if(node->lhs->rhs != NULL){
+                gen(node->lhs->rhs);
+                printf("    pop rsi\n");
+            }
+            if(node->rhs->lhs != NULL){
+                gen(node->rhs->lhs);
+                printf("    pop rdx\n");
+            }
+            if(node->rhs->rhs != NULL){
+                gen(node->rhs->rhs);
+                printf("    pop rcx\n");
+            }
+
             printf("    call ");
             char *p = node->name_func;
             char q;
@@ -115,8 +133,8 @@ void gen(Node *node)
             return;
         case ND_FOR:    // for
             printf("#   ND_FOR\n");
-
-            gen(node->lhs->lhs);        // 初期条件
+            // if(node->lhs->lhs != NULL)
+                gen(node->lhs->lhs);        // 初期条件
             printf(".Lbegin");
             printf("%s:\n",lavel_contorl(LV_FOR));
             gen(node->lhs->rhs);        // 継続条件
@@ -125,7 +143,8 @@ void gen(Node *node)
             printf("    je .Lend");
             printf("%s\n",lavel_contorl(LV_FOR));
             gen(node->rhs->rhs);         // 処理内容
-            gen(node->rhs->lhs);        // 増分
+            // if(node->rhs->lhs != NULL)
+                gen(node->rhs->lhs);        // 増分
             printf("    jmp .Lbegin");
             printf("%s\n",lavel_contorl(LV_FOR));
             printf(".Lend");
@@ -257,12 +276,18 @@ Node *stmt()
         Node *left = calloc(1,sizeof(Node));
         Node *right = calloc(1,sizeof(Node));
         expect("(");
-        left->lhs = expr();     // 初期条件
-        expect(";");
-        left->rhs = expr();     // 継続条件
-        expect(";");
-        right->lhs = expr();    // 増分
-        expect(")");
+        if(!consume(";")){
+            left->lhs = expr();     // 初期条件
+            expect(";");
+        }
+        if(!consume(";")){
+            left->rhs = expr();     // 継続条件
+            expect(";");
+        }
+        if(!consume(")")){
+            right->lhs = expr();    // 増分
+            expect(")");
+        }
         right->rhs = stmt();    // 処理内容
         // ノードにつなげる.
         node->lhs = left;
@@ -375,7 +400,7 @@ Node *unary()
 }
 
 
-// primary    = num | ident "(" expr ")"?  |  "(" expr ")"
+// primary    = num | ident "(" stmt* ")"?  |  "(" expr ")"
 Node *primary()
 {
     Node *node;
@@ -391,10 +416,29 @@ Node *primary()
     if(tok){    // 数字でなければ
         if(consume("(")){
             // identのあとに ( があると関数とみなす.
+            Node *left = calloc(1,sizeof(Node));
+            Node *right = calloc(1,sizeof(Node));
             node = new_node(ND_FUNC);
+            // 関数名をnodeにわたす.
             node->name_func = tok->str;
-            // ここに引数が入るよ.(最大6個)
-            expect(")");
+
+            for(int i=0;!consume(")");i++){
+                if(i == 0)
+                    left->lhs = expr();
+                else if(i == 1)
+                    left->rhs = expr();
+                else if(i == 2)
+                    right->lhs = expr();
+                else if(i == 3)
+                    right->rhs = expr();
+                if(consume(")"))
+                    break;
+                expect(",");
+            }
+            // 新規作成したノードを連結する.
+            node->lhs = left;
+            node->rhs = right;
+            // 関数の引数を渡す処理
             return node;
         }else{
             // identのあとに ( がない場合,変数とみなす.

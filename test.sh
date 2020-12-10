@@ -4,7 +4,7 @@ assert() {
   input="$2"
 
   ./9cc "$input" > tmp.s
-  cc -o tmp tmp.s
+  cc -o tmp tmp.s func.o
   ./tmp
   actual="$?"
 
@@ -74,6 +74,10 @@ return a;
 assert 5 "for(a=0;a<5;a=a+1){b=0;c=0;}
 return a;
 "
+
+assert 10 "a=0;for(;a<5;)a=a+1;
+return 10;"
+
 assert 5 "b = 0;for(a=0;a<5;a=a+1){a=0;b = 3;c=5;d=8;}
 return 5;
 "
@@ -84,6 +88,10 @@ return b;
 assert 10 "b = 0;for(a=0;a<5;a=a+1){if(a==3)b=10;}
 return b;
 "
-assert 100 "foo();"
+
+assert 128 "foo();"
+assert 128 "bar(1,2);"
+assert 128 "buz(1,2,3,4);"
+
 
 echo OK

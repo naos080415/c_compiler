@@ -71,6 +71,16 @@ bool consume(char *op)
     return true;
 }
 
+
+bool token_keyword(char *op)
+{
+    if(strlen(op) != token->len || memcmp(token->str,op,token->len))
+        return false;
+    else
+        return true;
+}
+
+
 bool consume_keyword(char *op)
 {
     if( token->kind != TK_CONSYS || memcmp(token->str,op,token->len) )
@@ -146,13 +156,31 @@ Token *tokenize()
     Token *cur = &head;
 
     while(*p){
-        
         // 空白文字をスキップ
         if(isspace(*p)){
             p++;
             continue;
         }
 
+        // // 制御構文(if,else,while,for,return)
+        int len = contorl_syntax(p);
+        if(len != 0){
+            cur = new_token(TK_CONSYS,cur,p,len);
+            p += len;
+            continue;
+        }
+       // 変数があったとき
+        if('a' <= *p && *p <= 'z'){
+            char *q = p;
+            while('a' <= *q && *q <= 'z')
+                q++;
+            int len = q - p;
+            // 次に"("　があると関数とみなす
+            cur = new_token(TK_IDENT,cur,p,len);
+            p = q;
+            continue;
+        }
+         
         // 2つの記号の演算子
         if(!memcmp(p,"==",2) || !memcmp(p,"!=",2)
             || !memcmp(p,"<=",2) || !memcmp(p,">=",2)){
@@ -162,7 +190,7 @@ Token *tokenize()
         }
 
         // 1つの記号の演算子
-        if(strchr("+-*/=()<>;{}",*p)){
+        if(strchr("+-*/=()<>;{},",*p)){
             cur = new_token(TK_RESERVED,cur,p,1);
             p++;
             continue;
@@ -177,25 +205,6 @@ Token *tokenize()
             continue;
         }
 
-        // // 制御構文(if,else,while,for,return)
-        int len = contorl_syntax(p);
-        if(len != 0){
-            cur = new_token(TK_CONSYS,cur,p,len);
-            p += len;
-            continue;
-        }
-
-        // 変数があったとき
-        if('a' <= *p && *p <= 'z'){
-            char *q = p;
-            while('a' <= *q && *q <= 'z')
-                q++;
-            int len = q - p;
-            cur = new_token(TK_IDENT,cur,p,len);
-            p = q;
-            continue;
-        }
-        
         error_at(token->str,"トークナイズできません");
     }
     new_token(TK_EOF,cur,p,0);
