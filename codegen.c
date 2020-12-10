@@ -153,8 +153,11 @@ void gen(Node *node)
             return;
         case ND_BLOCK:      // { }
             printf("#   NL_BLOCK\n");
-            gen(node->rhs);
-            printf("    pop rax\n");
+            for(int i = 0;node->block[i];i++){
+                gen(node->block[i]);
+                printf("    pop rax\n");
+            }
+            printf("#   NL_BLOCK_END\n");
             return;
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
@@ -297,8 +300,10 @@ Node *stmt()
         node = new_node(ND_RETURN);
         node->lhs = expr();
     }else if(consume("{")){
-        while(!consume("}")){
-            node = new_binary(ND_BLOCK,node,stmt());
+        node = new_node(ND_BLOCK);
+        node->block = calloc(100,sizeof(Node));
+        for(int i = 0;!consume("}");i++){
+            node->block[i] = stmt();
         }
         return node;
     }else{

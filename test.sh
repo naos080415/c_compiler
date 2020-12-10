@@ -16,7 +16,7 @@ assert() {
   fi
 }
 
-assert 0 "0;"
+# assert 0 "main(){0;}"
 assert 42 "42;"
 assert 21 "5 +20-4;"
 assert 41 " 12 + 34 - 5;"
@@ -78,20 +78,20 @@ return a;
 assert 10 "a=0;for(;a<5;)a=a+1;
 return 10;"
 
-assert 5 "b = 0;for(a=0;a<5;a=a+1){a=0;b = 3;c=5;d=8;}
+assert 5 "b = 0;for(a=0;a<5;a=a+1){b=0;c=0;d=0;e=0;}
 return 5;
 "
-assert 0 "b = 0;for(a=0;a<5;a=a+1){b=0;}
-return b;
-"
+# assert 0 "b = 0;for(a=0;a<5;a=a+1){b=0;}
+# return b;
+# "
 
-assert 10 "b = 0;for(a=0;a<5;a=a+1){if(a==3)b=10;}
-return b;
-"
+# assert 10 "b = 0;for(a=0;a<5;a=a+1){if(a==3)b=10;}
+# return b;
+# "
 
-assert 128 "foo();"
-assert 128 "bar(1,2);"
-assert 128 "buz(1,2,3,4);"
+# assert 128 "foo();"
+# assert 128 "bar(1,2);"
+# assert 128 "buz(1,2,3,4);"
 
 
 echo OK

@@ -161,14 +161,14 @@ Token *tokenize()
             p++;
             continue;
         }
-
-        // // 制御構文(if,else,while,for,return)
+        // 制御構文(if,else,while,for,return)
         int len = contorl_syntax(p);
         if(len != 0){
             cur = new_token(TK_CONSYS,cur,p,len);
             p += len;
             continue;
         }
+
        // 変数があったとき
         if('a' <= *p && *p <= 'z'){
             char *q = p;
