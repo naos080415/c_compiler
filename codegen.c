@@ -237,13 +237,31 @@ Node *new_node_num(int val)
     return node;
 }
 
-// program    = stmt*
+// program    = func*
 void program()
 {
      int i = 0;
      while(!at_eof())
-        code[i++] = stmt();
+        code[i++] = func();
     code[i] = NULL;
+}
+
+// func     = ident "(" ")" "{" stmt* "}"
+Node *func()
+{
+    Node *node;
+    Token *tok = consume_ident();
+    if(tok){
+        node = new_node(ND_BLOCK);
+        node->block = calloc(100,sizeof(Node));
+        expect("(");
+        expect(")");
+        expect("{");
+        for(int i = 0;!consume("}");i++){
+            node->block[i] = stmt();
+        }
+    }
+    return node;
 }
 
 /* stmt       = expr ";" | "if" "(" expr ")" stmt ("else" stmt)?
@@ -405,7 +423,7 @@ Node *unary()
 }
 
 
-// primary    = num | ident "(" stmt* ")"?  |  "(" expr ")"
+// pimary    = num | ident "(" stmt* ")"?  |  "(" expr ")"
 Node *primary()
 {
     Node *node;

@@ -26,6 +26,7 @@ int main(int argc,char **argv)
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
     printf(".globl main\n");
+
     printf("main:\n");
     
     // プロローグ

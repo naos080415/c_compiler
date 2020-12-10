@@ -131,9 +131,10 @@ Token *tokenize();   // 入力文字列pをトークナイズしてそれを返�
 /* エラーを報告するための関数
     printfと同じ引数を取る */
 void gen(Node *node);
+void gen_lval(Node *node);      // 左辺値の評価(左辺がアドレスになっているか?)
 char *lavel_contorl(Label_keyword kind);
 void program();
-void gen_lval(Node *node);      // 左辺値の評価(左辺がアドレスになっているか?)
+Node *func();
 Node *stmt();
 Node *expr();
 Node *assign();
