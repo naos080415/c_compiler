@@ -116,7 +116,6 @@ void gen(Node *node)
             return;
         case ND_WHILE:
             printf("#   ND_WHILE\n");
-
             printf(".Lbegin");
             printf("%s:\n",lavel_contorl(LV_WHILE));
             gen(node->lhs);
