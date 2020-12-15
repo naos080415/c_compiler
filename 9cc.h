@@ -11,6 +11,7 @@ typedef enum {
     TK_IDENT,       // 識別子
     TK_NUM,         // 整数トークン
     TK_CONSYS,      // 制御構文(if,else,while,for)
+    TK_VAR,         // 変数の型(int)
     TK_RETURN,      // return    
     TK_EOF,         // 入力の終わりを表すトークン
 } TokenKind;
@@ -36,6 +37,7 @@ typedef enum {
     ND_ADDR,    // &
     ND_DEREF,   // *
     ND_LVAR,    // ローカル変数
+    ND_LVAR_DEF_INT,    // ローカル変数
     ND_EQ,      // ==
     ND_NE,      // !=
     ND_LT,      // <
@@ -113,6 +115,8 @@ void error_at(char *loc,char *fmt, ...);
 int is_alnum(char c);
 // 制御構文であるかどうかの判定
 int contorl_syntax(char *p);
+// 変数の型であるかどうかの判定
+int variable_syntax(char *p);
 /* 次のトークンが期待している記号のときには,トークンを1つ読み進めて
     真を返す.それ以外の場合には偽をかえす */
 bool consume(char *op);
@@ -147,3 +151,4 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
+Node *variable_def();

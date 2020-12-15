@@ -33,7 +33,7 @@ void gen(Node *node)
             printf("#   ND_NUM\n");
             printf("    push %d\n",node->val);
             return;
-        case ND_LVAR:   // 変数
+        case ND_LVAR:   // 変数(int)
             printf("#   ND_LVAR\n");
             gen_lval(node);
             printf("    pop rax\n");
@@ -274,9 +274,12 @@ Node *func()
     return node;
 }
 
-/* stmt       = expr ";" | "if" "(" expr ")" stmt ("else" stmt)?
-    "while" "(" expr ")" stmt   | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
-|   | "{" stmt* "}" | return expr ";" */
+/* stmt       =  expr ";" 
+                | "if" "(" expr ")" stmt ("else" stmt)?
+                | "while" "(" expr ")" stmt   
+                | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
+                | "{" stmt* "}"
+                | return expr ";" */
 Node *stmt()
 {
     Node *node;
@@ -327,6 +330,8 @@ Node *stmt()
     }else if(consume_keyword("return")){
         node = new_node(ND_RETURN);
         node->lhs = expr();
+        expect(";");
+        return node;
     }else if(consume("{")){
         node = new_node(ND_BLOCK);
         node->block = calloc(100,sizeof(Node));
@@ -334,13 +339,16 @@ Node *stmt()
             node->block[i] = stmt();
         }
         return node;
+    }else if(consume_keyword("int")){
+        node = calloc(1,sizeof(Node));
+        node = variable_def();
+        expect(";");
+        return node;        
     }else{
         node = expr();
+        expect(";");
+        return node;
     }
-
-    // 文の終わりの判断
-    expect(";");
-    return node;
 }
 
 // expr       = assign
@@ -455,6 +463,7 @@ Node *primary()
     }
     
     Token *tok = consume_ident();
+
     if(tok){    // 数字でなければ
         if(consume("(")){
             // identのあとに ( があると関数とみなす.
@@ -490,16 +499,7 @@ Node *primary()
             if(lvar){
                 node->offset = lvar->offset;
             }else{
-                lvar = calloc(1,sizeof(LVar));
-                lvar->next = locals;
-                lvar->name = tok->str;
-                lvar->len = tok->len;
-                if( locals == NULL )
-                    lvar->offset = 8;
-                else
-                    lvar->offset = locals->offset + 8;
-                node->offset = lvar->offset;
-                locals = lvar;
+                error("定義されていない変数です\n");
             }
             return node;
         }
@@ -507,4 +507,25 @@ Node *primary()
 
     // そうでなければ数値のはず
     return new_node_num(expect_number());
+}
+
+// variable_def     =  variable
+Node *variable_def()
+{
+    Token *tok = consume_ident();
+    if(tok){
+        Node *node = new_node(ND_LVAR);
+        LVar *lvar = find_lvar(tok);
+        lvar = calloc(1,sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = tok->str;
+        lvar->len = tok->len;
+        if( locals == NULL )
+            lvar->offset = 8;
+        else
+            lvar->offset = locals->offset + 8;
+        node->offset = lvar->offset;
+        locals = lvar;
+        return node;
+    }
 }

@@ -45,7 +45,7 @@ int is_alnum(char c) {
 int contorl_syntax(char *p)
 {
     int i,len;
-    char *consys_word[5] = {
+    char *consys_word[6] = {
         "if",
         "else",
         "while",
@@ -53,6 +53,21 @@ int contorl_syntax(char *p)
         "return",
     };
     for(i = 0;i<5;i++){
+        len = strlen(consys_word[i]);
+        if(!strncmp(p,consys_word[i],len) && !is_alnum(p[len]))
+            return len;
+    }
+    return 0;
+}
+
+// 変数の型であるかどうかの判定
+int variable_syntax(char *p)
+{
+    int i,len;
+    char *consys_word[1] = {
+        "int",
+    };
+    for(i = 0;i<1;i++){
         len = strlen(consys_word[i]);
         if(!strncmp(p,consys_word[i],len) && !is_alnum(p[len]))
             return len;
@@ -83,7 +98,7 @@ bool token_keyword(char *op)
 
 bool consume_keyword(char *op)
 {
-    if( token->kind != TK_CONSYS || memcmp(token->str,op,token->len) )
+    if( memcmp(token->str,op,token->len) )
         return false;
     token = token->next;
     return true;
@@ -155,14 +170,25 @@ Token *tokenize()
     head.next = NULL;
     Token *cur = &head;
 
+    int len;        // 予約語の文字列数
+ 
     while(*p){
         // 空白文字をスキップ
         if(isspace(*p)){
             p++;
             continue;
         }
+
+        // 変数の型(int)
+        len = variable_syntax(p);
+        if(len != 0){
+            cur = new_token(TK_VAR,cur,p,len);
+            p += len;
+            continue;
+        }
+
         // 制御構文(if,else,while,for,return)
-        int len = contorl_syntax(p);
+        len = contorl_syntax(p);
         if(len != 0){
             cur = new_token(TK_CONSYS,cur,p,len);
             p += len;
@@ -174,7 +200,7 @@ Token *tokenize()
             char *q = p;
             while('a' <= *q && *q <= 'z')
                 q++;
-            int len = q - p;
+            len = q - p;
             // 次に"("　があると関数とみなす
             cur = new_token(TK_IDENT,cur,p,len);
             p = q;
