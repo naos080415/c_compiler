@@ -49,6 +49,17 @@ void gen(Node *node)
             printf("    mov [rax], rdi\n");
             printf("    push rdi\n");
             return;
+        case ND_ADDR:       // &
+            printf("#   ND_ADDR\n");
+            gen_lval(node->lhs);
+            return;
+        case ND_DEREF:      // *
+            printf("#   ND_DEREF\n");
+            gen(node->lhs);
+            printf("    pop rax\n");
+            printf("    mov rax, [rax]\n");
+            printf("    push rax\n");
+            return;
         case ND_FUNC:       // 関数 
             if(node->lhs->lhs != NULL){
                 gen(node->lhs->lhs);
@@ -411,13 +422,22 @@ Node *mul()
     }
 }
 
-// unary      = ("+" | "-")? primary
+// unary      = ("+" | "-")? primary | ("*" | "&") unary
 Node *unary()
 {
     if(consume("+"))
         return primary();
     if(consume("-"))
         return new_binary(ND_SUB,new_node_num(0),primary());
+    else if(consume("*")){
+        Node *node = new_node(ND_DEREF);
+        node->lhs = unary();
+        return node;
+    }else if(consume("&")){
+        Node *node = new_node(ND_ADDR);
+        node->lhs = unary();
+        return node;
+    }
     return primary();
 }
 

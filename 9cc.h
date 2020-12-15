@@ -33,6 +33,8 @@ typedef enum {
     ND_MUL,     // *
     ND_DIV,     // /
     ND_ASSIGN,  // =(代入)
+    ND_ADDR,    // &
+    ND_DEREF,   // *
     ND_LVAR,    // ローカル変数
     ND_EQ,      // ==
     ND_NE,      // !=

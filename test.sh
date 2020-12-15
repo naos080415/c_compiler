@@ -94,5 +94,16 @@ assert 128 "main(){foo();return 128;}"
 assert 128 "main(){bar(1,2);return 128;}"
 assert 128 "main(){buz(1,2,3,4);return 128;}"
 
-
+# 演算子(&,*)
+assert 3 "main(){
+x = 3;
+y = &x;
+return *y;}
+"
+assert 3 "main(){
+x = 3;
+y = 5;
+z = &y + 8;
+return *z;}
+"
 echo OK

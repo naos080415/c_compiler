@@ -190,7 +190,7 @@ Token *tokenize()
         }
 
         // 1つの記号の演算子
-        if(strchr("+-*/=()<>;{},",*p)){
+        if(strchr("+-*/=()<>;{},*&",*p)){
             cur = new_token(TK_RESERVED,cur,p,1);
             p++;
             continue;
