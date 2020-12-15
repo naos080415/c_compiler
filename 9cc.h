@@ -61,6 +61,7 @@ struct Node {
     Node *lhs;      // 左辺
     Node *rhs;      // 右辺
     Node **block;   // kindがND_BLOCKの場合のみ使う
+    Node *argv;     // kindがND_FUNCの場合のみ使う(引数)
     char *name_func;    // kindがND_FUNCの場合のみ使う(一時的に作成する・後で削除予定???)
     int val;        // kindがND_NUMの場合のみ使う
     int offset;     // kindがND_LVARの場合のみ使う

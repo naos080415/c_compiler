@@ -86,7 +86,6 @@ bool consume(char *op)
     return true;
 }
 
-
 bool token_keyword(char *op)
 {
     if(strlen(op) != token->len || memcmp(token->str,op,token->len))

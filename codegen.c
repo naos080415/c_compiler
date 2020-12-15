@@ -256,22 +256,34 @@ void program()
     code[i] = NULL;
 }
 
-// func     = ident "(" ")" "{" stmt* "}"
+// func     = "int" ident "(" ")" "{" stmt* "}"
 Node *func()
 {
     Node *node;
-    Token *tok = consume_ident();
-    if(tok){
-        node = new_node(ND_BLOCK);
-        node->block = calloc(100,sizeof(Node));
-        expect("(");
-        expect(")");
-        expect("{");
-        for(int i = 0;!consume("}");i++){
-            node->block[i] = stmt();
+    if(consume_keyword("int")){
+        Token *tok = consume_ident();
+        if(tok){
+            node = new_node(ND_BLOCK);
+            node->block = calloc(100,sizeof(Node));
+            node->argv = calloc(4,sizeof(Node));
+            expect("(");
+            for(int i=0;!consume(")");i++){
+                if(consume_keyword("int")){
+                    node->argv = variable_def();
+                    if(consume(",")){
+                        node->argv++;
+                    }
+                }
+            }
+            expect("{");
+            for(int i = 0;!consume("}");i++){       
+                node->block[i] = stmt();
+            }
         }
+        return node;
+    }else{
+        error("関数の型が定義されていません.\n");
     }
-    return node;
 }
 
 /* stmt       =  expr ";" 
@@ -283,7 +295,6 @@ Node *func()
 Node *stmt()
 {
     Node *node;
-    
     if(consume_keyword("if")){
         node = new_node(ND_IF);
         expect("(");
