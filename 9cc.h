@@ -67,6 +67,18 @@ struct Node {
     int offset;     // kindがND_LVARの場合のみ使う
 };
 
+typedef enum{
+    INT,        // int型
+    INT_PTR,    // int型のポインタ
+} Vtypekind;
+
+typedef struct Vtype Vtype;
+
+struct Vtype {
+   Vtypekind kind;
+   Vtype *ptr_to;       // kindがPTRのときに使う
+};
+
 typedef struct LVar LVar;
 
 // ローカル変数の型
@@ -75,6 +87,7 @@ struct LVar {
     char *name;     // 変数名
     int len;        // 変数名の長さ
     int offset;     // RBPからのオフセット
+    Vtype *ptr;     // ポインタ
 };
 
 // 予約語の定義
@@ -84,16 +97,6 @@ typedef enum{
     LV_FOR,
     LV_END,
 } Label_keyword;
-
-// 関数の引数の定義
-typedef enum{
-    FN_RDI,     // 第1引数(RDI)
-    FN_RSI,     // 第2引数(RSI)
-    FN_RDX,     // 第3引数(RDX)
-    FN_RCX,     // 第4引数(RCX)
-    FN_R8,      // 第5引数(R8)
-    FN_R9,      // 第6引数(R9)
-} Call_function;
 
 // 現在着目しているトークン
 extern Token *token;

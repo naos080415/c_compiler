@@ -10,12 +10,15 @@ int label_cnt[LV_END];      // ラベルの通し番号
 
 void gen_lval(Node *node)
 {
-    if(node->kind != ND_LVAR)
+    if(node->kind == ND_LVAR){
+        printf("    mov rax, rbp\n");
+        printf("    sub rax, %d\n",node->offset);
+        printf("    push rax\n");
+    }else if(node->kind == ND_DEREF){
+        gen(node->lhs);
+    }else{
         error("代入の左辺値が変数ではありません");
-
-    printf("    mov rax, rbp\n");
-    printf("    sub rax, %d\n",node->offset);
-    printf("    push rax\n");
+    }
 }
 
 char *lavel_contorl(Label_keyword kind)
@@ -45,6 +48,7 @@ void gen(Node *node)
             printf("#   ND_ASSIGN\n");
             gen_lval(node->lhs);
             gen(node->rhs);
+            
             printf("    pop rdi\n");
             printf("    pop rax\n");
             printf("    mov [rax], rdi\n");
@@ -288,7 +292,7 @@ Node *func()
                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
                 | return expr ";"
                 | "{" stmt* "}"
-                | "int" ident ";"
+                | "int" "*"? ident ";"
                 | return expr ";" */
 Node *stmt()
 {
@@ -352,7 +356,7 @@ Node *stmt()
         node = calloc(1,sizeof(Node));
         node = variable_def();
         expect(";");
-        return node;        
+        return node;
     }else{
         node = expr();
         expect(";");
@@ -510,6 +514,14 @@ Node *primary()
 // variable_def     =  variable
 Node *variable_def()
 {
+    Vtype *type = calloc(1,sizeof(Vtype));
+    type->kind = INT;
+    while(consume("*")){
+        Vtype *p = calloc(1,sizeof(Vtype));
+        p->kind = INT_PTR;
+        type->ptr_to = p;
+    }
+
     Token *tok = consume_ident();
     if(tok){
         Node *node = new_node(ND_LVAR);
@@ -522,6 +534,7 @@ Node *variable_def()
             lvar->offset = 8;
         else
             lvar->offset = locals->offset + 8;
+        lvar->ptr = type;
         node->offset = lvar->offset;
         locals = lvar;
         return node;

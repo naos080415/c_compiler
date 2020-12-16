@@ -16,6 +16,7 @@ assert() {
   fi
 }
 
+
 # 演算子
 assert 0 "int main(){return 0;}"
 assert 42 "int main(){return 42;}"
@@ -102,4 +103,12 @@ x = 3;
 y = 5;
 z = &y + 8;
 return *z;}"
+# ポインタ
+assert 3 "int main(){
+int x;
+int *y;
+y = &x;
+*y = 3;
+return x;}"
+
 echo OK
