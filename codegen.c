@@ -27,6 +27,7 @@ char *lavel_contorl(Label_keyword kind)
 
 void gen(Node *node)
 {
+    char *x86_ABI[6] = {"rdi","rsi","rdx","rcx","r8","r9"};
     if(!node) return;
     switch (node->kind){
         case ND_NUM:
@@ -63,16 +64,8 @@ void gen(Node *node)
         case ND_FUNC:       // 関数 
             for(int i = 0;node->args[i];i++){
                 gen(node->args[i]);
-                if(i == 0)
-                    printf("    pop rdi\n");
-                else if(i == 1)
-                    printf("    pop rsi\n");
-                else if(i == 2)
-                    printf("    pop rdx\n");
-                else if(i == 3)
-                    printf("    pop rcx\n");
+                printf("    pop %s\n",x86_ABI[i]);
             }
-
             printf("    call ");
             char *p = node->name_func;
             char q;
@@ -154,6 +147,14 @@ void gen(Node *node)
             printf("%s:\n",lavel_contorl(LV_FOR));
             *(label_cnt+LV_FOR) = *(label_cnt+LV_FOR) + 1;
             return;
+        case ND_FUNC_DEF:
+            printf("#   ND_FUNC_DEF\n");
+            for(int i = 0;node->block[i];i++){
+                gen(node->block[i]);
+                printf("    pop rax\n");
+            }
+            printf("#   ND_FUNC_DEF_END\n");            
+            return;
         case ND_BLOCK:      // { }
             printf("#   NL_BLOCK\n");
             for(int i = 0;node->block[i];i++){
@@ -162,6 +163,7 @@ void gen(Node *node)
             }
             printf("#   NL_BLOCK_END\n");
             return;
+        
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
             gen(node->lhs);
@@ -249,14 +251,14 @@ void program()
     code[i] = NULL;
 }
 
-// func     = "int" ident "(" ")" "{" stmt* "}"
+// func     = "int"  ident "(" ")" "{" stmt* "}"
 Node *func()
 {
     Node *node;
     if(consume_keyword("int")){
         Token *tok = consume_ident();
         if(tok){
-            node = new_node(ND_BLOCK);
+            node = new_node(ND_FUNC_DEF);
             node->block = calloc(100,sizeof(Node));
             node->args = calloc(6,sizeof(Node));
             expect("(");
@@ -284,7 +286,9 @@ Node *func()
                 | "if" "(" expr ")" stmt ("else" stmt)?
                 | "while" "(" expr ")" stmt   
                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
+                | return expr ";"
                 | "{" stmt* "}"
+                | "int" ident ";"
                 | return expr ";" */
 Node *stmt()
 {
