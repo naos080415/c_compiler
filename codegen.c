@@ -418,14 +418,14 @@ Node *add()
     for(;;){
         if(consume("+")){
             Node *right = mul();
-            if(node->type && node->type->kind == INT_PTR){     // ポインタ変数だった場合
+            if(node->type && node->type->kind == PTR){     // ポインタ変数だった場合
                 int n = node->type->ptr_to->kind == INT ? 4 : 8;
                 right = new_binary(ND_MUL,right,new_node_num(n));
             }
             node = new_binary(ND_ADD,node,right);
         }else if(consume("-")){
             Node *right = mul();
-            if(node->type && node->type->kind == INT_PTR){     // ポインタ変数だった場合
+            if(node->type && node->type->kind == PTR){     // ポインタ変数だった場合
                 int n = node->type->ptr_to->kind == INT ? 4 : 8;
                 right = new_binary(ND_MUL,right,new_node_num(n));
             }
@@ -473,7 +473,7 @@ Node *unary()
         Node *buf = unary();
         int size;
         if(buf->kind != ND_NUM)
-            size = buf->type->kind == INT_PTR ? 8 : 4;
+            size = buf->type->kind == PTR ? 8 : 4;
         else
             size = 4;
         expect(")");
@@ -539,7 +539,7 @@ Node *variable_def()
     type->ptr_to = NULL;
     while(consume("*")){
         Vtype *p = calloc(1,sizeof(Vtype));
-        p->kind = INT_PTR;
+        p->kind = PTR;
         p->ptr_to = type;
         type = p;
     }
@@ -547,11 +547,11 @@ Node *variable_def()
     Token *tok = consume_ident();
     if(tok){
         Node *node = new_node(ND_LVAR);
-        
         LVar *lvar = find_lvar(tok);
         lvar = calloc(1,sizeof(LVar));
+        lvar->name = calloc(32,sizeof(char));       // 確かCの変数名は32文字までやった気がする
         lvar->next = locals;
-        lvar->name = tok->str;
+        memcpy(lvar->name,tok->str,tok->len);
         lvar->len = tok->len;
         if( locals == NULL )
             lvar->offset = 8;
@@ -561,6 +561,13 @@ Node *variable_def()
         node->type = type;
         node->offset = lvar->offset;
         locals = lvar;
+        
+        // 一旦,ここには雑に配列を実装する.(ポインタと配列は同時定義できない)
+        if(consume("[")){
+            type->kind = ARRAY;
+            int size = expect_number();
+            expect("]");
+        }
         return node;
     }
 }

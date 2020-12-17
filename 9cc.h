@@ -29,7 +29,8 @@ struct Token {
 
 typedef enum{
     INT,        // int型
-    INT_PTR,    // int型のポインタ
+    PTR,        // ポインタ
+    ARRAY,      // 配列
 } Vtypekind;
 
 typedef struct Vtype Vtype;

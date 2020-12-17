@@ -15,6 +15,10 @@ assert() {
     exit 1
   fi
 }
+
+# 配列
+assert 0 "int main(){int x[10];return 0;}"
+
 #演算子
 assert 0 "int main(){return 0;}"
 assert 42 "int main(){return 42;}"
@@ -129,7 +133,7 @@ return *q;}"
 assert 4 "int main(){
 int x;
 int y;
-y=sizeof(x+3);
+y=sizeof(x);
 return y;}"
 
 assert 8 "int main(){
