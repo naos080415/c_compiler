@@ -88,6 +88,7 @@ return b;}"
 assert 128 "int main(){foo();return 128;}"
 assert 128 "int main(){bar(1,2);return 128;}"
 assert 128 "int main(){buz(1,2,3,4);return 128;}"
+assert 128 "int main(){int *p;buzp(p,1,2,3,4);return 128;}"
 
 assert 128 "int main(){abi(1,2,3,4,5,6);return 128;}"
 # 演算子(&,*)
@@ -103,6 +104,7 @@ x = 3;
 y = 5;
 z = &y + 8;
 return *z;}"
+
 # ポインタ
 assert 3 "int main(){
 int x;
@@ -112,16 +114,17 @@ y = &x;
 return x;}"
 
 assert 3 "int main(){
-int *a;
-a = a + 1;
-return 3;
-}"
-
-assert 3 "int main(){
-int *a;
-a = a + 3;
-return 3;
-}"
-
+int x;
+int *y;
+y = &x;
+*y = 3;
+return *y;}"
+assert 4 "int main(){
+int *p;
+int *q;
+allocs(&p, 1, 2, 4, 8);
+q = p + 2;
+return *q;}"
 
 echo OK
+ 

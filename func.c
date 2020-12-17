@@ -16,16 +16,20 @@ int buz(int x,int y,int z,int w)
     printf("%d+%d+%d+%d = %d\n",x,y,z,w,x+y+z+w);
 }
 
+int buzp(int *p,int x,int y,int z,int w)
+{
+    printf("%d+%d+%d+%d = %d\n",x,y,z,w,x+y+z+w);
+}
 int abi(int x,int y,int z,int w,int t,int u)
 {
     printf("%d+%d+%d+%d+%d+%d= %d\n",x,y,z,w,t,u,x+y+z+w+t+u);
 }
 
-void alloc4(int *p,int x,int y,int z,int w)
+void allocs(int **p,int x,int y,int z,int w)
 {
-    p = malloc(sizeof(int)*4);
-    *(p+0) = x;
-    *(p+1) = y;
-    *(p+2) = z;
-    *(p+3) = w;
+    *p = malloc(sizeof(int)*4);
+    (*p)[0] = x;
+    (*p)[1] = y;
+    (*p)[2] = z;
+    (*p)[3] = w;
 }
