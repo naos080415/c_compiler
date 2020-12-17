@@ -50,9 +50,10 @@ int contorl_syntax(char *p)
         "else",
         "while",
         "for",
+        "sizeof",
         "return",
     };
-    for(i = 0;i<5;i++){
+    for(i = 0;i<6;i++){
         len = strlen(consys_word[i]);
         if(!strncmp(p,consys_word[i],len) && !is_alnum(p[len]))
             return len;
@@ -186,7 +187,7 @@ Token *tokenize()
             continue;
         }
 
-        // 制御構文(if,else,while,for,return)
+        // 制御構文(if,else,while,for,sizeof,return)
         len = contorl_syntax(p);
         if(len != 0){
             cur = new_token(TK_CONSYS,cur,p,len);

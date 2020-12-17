@@ -167,7 +167,6 @@ void gen(Node *node)
             }
             printf("#   NL_BLOCK_END\n");
             return;
-        
         case ND_RETURN:     // return
             printf("#   ND_RETURN\n");
             gen(node->lhs);
@@ -452,12 +451,14 @@ Node *mul()
     }
 }
 
-// unary      = ("+" | "-")? primary | ("*" | "&") unary
+/* unary      = |("+" | "-")? primary 
+                | ("*" | "&") unary
+                | "sizeof" "(" unary ")" */
 Node *unary()
 {
     if(consume("+"))
         return primary();
-    if(consume("-"))
+    else if(consume("-"))
         return new_binary(ND_SUB,new_node_num(0),primary());
     else if(consume("*")){
         Node *node = new_node(ND_DEREF);
@@ -467,8 +468,14 @@ Node *unary()
         Node *node = new_node(ND_ADDR);
         node->lhs = unary();
         return node;
-    }
-    return primary();
+    }else if(consume_keyword("sizeof")){
+        expect("(");
+        Node *buf = unary();
+        int size = buf->type->kind == INT ? 4 : 8;
+        expect(")");
+        return new_node_num(size);
+    }else
+        return primary();
 }
 
 

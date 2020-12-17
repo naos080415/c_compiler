@@ -15,7 +15,6 @@ assert() {
     exit 1
   fi
 }
-
 #演算子
 assert 0 "int main(){return 0;}"
 assert 42 "int main(){return 42;}"
@@ -125,6 +124,19 @@ int *q;
 allocs(&p, 1, 2, 4, 8);
 q = p + 2;
 return *q;}"
+
+# sizeof演算子
+assert 4 "int main(){
+int x;
+int y;
+y=sizeof(x);
+return y;}"
+
+assert 8 "int main(){
+int *x;
+int y;
+y=sizeof(x);
+return y;}"
 
 echo OK
  
