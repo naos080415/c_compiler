@@ -219,7 +219,6 @@ void gen(Node *node)
             printf("    movzb rax, al\n");
             break;
     }
-
     printf("    push rax\n");
 }
  
@@ -292,7 +291,7 @@ Node *func()
                 | "for" "(" expr? ";" expr? ";" expr? ")" stmt 
                 | return expr ";"
                 | "{" stmt* "}"
-                | "int" "*"? ident ";"
+                | "int"  variable_def ";"
                 | return expr ";" */
 Node *stmt()
 {
@@ -417,14 +416,24 @@ Node *relational()
 Node *add()
 {
     Node *node = mul();
-
     for(;;){
-        if(consume("+"))
-            node = new_binary(ND_ADD,node,mul());
-        else if(consume("-"))
-            node = new_binary(ND_SUB,node,mul());
-        else
+        if(consume("+")){
+            Node *right = mul();
+            if(node->type && node->type->kind == INT_PTR){     // ポインタ変数だった場合
+                int n = node->type->ptr_to->kind == INT ? 4 : 8;
+                right = new_binary(ND_MUL,right,new_node_num(n));
+            }
+            node = new_binary(ND_ADD,node,right);
+        }else if(consume("-")){
+            Node *right = mul();
+            if(node->type && node->type->kind == INT_PTR){     // ポインタ変数だった場合
+                int n = node->type->ptr_to->kind == INT ? 4 : 8;
+                right = new_binary(ND_MUL,right,new_node_num(n));
+            }
+            node = new_binary(ND_SUB,node,right);
+        }else{
             return node;
+        }
     }
 }
 
@@ -497,8 +506,8 @@ Node *primary()
             // identのあとに ( がない場合,変数とみなす.
             node = new_node(ND_LVAR);     
             LVar *lvar = find_lvar(tok);
-
             if(lvar){
+                node->type = lvar->type;
                 node->offset = lvar->offset;
             }else{
                 error("定義されていない変数です\n");
@@ -511,20 +520,23 @@ Node *primary()
     return new_node_num(expect_number());
 }
 
-// variable_def     =  variable
+// variable_def     =  "*"? variable
 Node *variable_def()
 {
     Vtype *type = calloc(1,sizeof(Vtype));
     type->kind = INT;
+    type->ptr_to = NULL;
     while(consume("*")){
         Vtype *p = calloc(1,sizeof(Vtype));
         p->kind = INT_PTR;
-        type->ptr_to = p;
+        p->ptr_to = type;
+        type = p;
     }
 
     Token *tok = consume_ident();
     if(tok){
         Node *node = new_node(ND_LVAR);
+        
         LVar *lvar = find_lvar(tok);
         lvar = calloc(1,sizeof(LVar));
         lvar->next = locals;
@@ -534,7 +546,8 @@ Node *variable_def()
             lvar->offset = 8;
         else
             lvar->offset = locals->offset + 8;
-        lvar->ptr = type;
+        lvar->type = type;
+        node->type = type;
         node->offset = lvar->offset;
         locals = lvar;
         return node;

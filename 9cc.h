@@ -27,6 +27,18 @@ struct Token {
     int len;            // トークンの長さ
 };
 
+typedef enum{
+    INT,        // int型
+    INT_PTR,    // int型のポインタ
+} Vtypekind;
+
+typedef struct Vtype Vtype;
+
+struct Vtype {
+   Vtypekind kind;
+   Vtype *ptr_to;       // kindがPTRのときに使う
+};
+
 // 抽象構文木のノートの種類
 typedef enum {
     ND_ADD,     // +
@@ -37,7 +49,7 @@ typedef enum {
     ND_ADDR,    // &
     ND_DEREF,   // *
     ND_LVAR,    // ローカル変数
-    ND_LVAR_DEF_INT,    // ローカル変数
+    ND_LVAR_PTR,// ローカル変数(ポインタ)
     ND_EQ,      // ==
     ND_NE,      // !=
     ND_LT,      // <
@@ -61,22 +73,11 @@ struct Node {
     Node *lhs;      // 左辺
     Node *rhs;      // 右辺
     Node **block;   // kindがND_BLOCKの場合のみ使う
-    Node **args;     // kindがND_FUNCの場合のみ使う(引数)
+    Node **args;    // kindがND_FUNCの場合のみ使う(引数)
+    Vtype *type;     // ポインタのときに使う. 
     char *name_func;    // kindがND_FUNCの場合のみ使う(一時的に作成する・後で削除予定???)
     int val;        // kindがND_NUMの場合のみ使う
     int offset;     // kindがND_LVARの場合のみ使う
-};
-
-typedef enum{
-    INT,        // int型
-    INT_PTR,    // int型のポインタ
-} Vtypekind;
-
-typedef struct Vtype Vtype;
-
-struct Vtype {
-   Vtypekind kind;
-   Vtype *ptr_to;       // kindがPTRのときに使う
 };
 
 typedef struct LVar LVar;
@@ -87,7 +88,7 @@ struct LVar {
     char *name;     // 変数名
     int len;        // 変数名の長さ
     int offset;     // RBPからのオフセット
-    Vtype *ptr;     // ポインタ
+    Vtype *type;     // ポインタ
 };
 
 // 予約語の定義

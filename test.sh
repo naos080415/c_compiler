@@ -16,8 +16,7 @@ assert() {
   fi
 }
 
-
-# 演算子
+#演算子
 assert 0 "int main(){return 0;}"
 assert 42 "int main(){return 42;}"
 assert 21 "int main(){ return 5 +20-4;}"
@@ -90,6 +89,7 @@ assert 128 "int main(){foo();return 128;}"
 assert 128 "int main(){bar(1,2);return 128;}"
 assert 128 "int main(){buz(1,2,3,4);return 128;}"
 
+assert 128 "int main(){abi(1,2,3,4,5,6);return 128;}"
 # 演算子(&,*)
 assert 3 "int main(){
 int x;
@@ -110,5 +110,18 @@ int *y;
 y = &x;
 *y = 3;
 return x;}"
+
+assert 3 "int main(){
+int *a;
+a = a + 1;
+return 3;
+}"
+
+assert 3 "int main(){
+int *a;
+a = a + 3;
+return 3;
+}"
+
 
 echo OK
