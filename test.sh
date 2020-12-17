@@ -129,7 +129,7 @@ return *q;}"
 assert 4 "int main(){
 int x;
 int y;
-y=sizeof(x);
+y=sizeof(x+3);
 return y;}"
 
 assert 8 "int main(){
@@ -137,6 +137,11 @@ int *x;
 int y;
 y=sizeof(x);
 return y;}"
+
+assert 4 "int main(){
+int x;
+x=sizeof(1);
+return x;}"
 
 echo OK
  

@@ -471,7 +471,11 @@ Node *unary()
     }else if(consume_keyword("sizeof")){
         expect("(");
         Node *buf = unary();
-        int size = buf->type->kind == INT ? 4 : 8;
+        int size;
+        if(buf->kind != ND_NUM)
+            size = buf->type->kind == INT_PTR ? 8 : 4;
+        else
+            size = 4;
         expect(")");
         return new_node_num(size);
     }else
