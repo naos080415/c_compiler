@@ -16,11 +16,24 @@ assert() {
   fi
 }
 
-# 配列
-# assert 0 "int main(){
+# これから頑張るやつ(配列やポインタを返す部分)
+# assert 3 "int main(){
 # int x[10];
-# x[0] = 3;
+# x[3] = 3;
 # return x[3];}"
+
+# assert 5 "int main(){
+# int x[10];
+# *x = 5;
+# return *x;}"
+
+# assert 3 "int main(){
+# int a[2];
+# *a = 1;
+# *(a + 1) = 2;
+# int *p;
+# p = a;
+# return *p + *(p + 1);}"
 
 #演算子
 assert 0 "int main(){return 0;}"
@@ -48,12 +61,12 @@ assert 1 "int main(){ return 1>=0;}"
 assert 1 "int main(){ return 1>=1;}"
 assert 0 "int main(){ return 1>=2;}"
 
-# assert 14 "int main(){ 
-# int foo;
-# int var;
-# foo = 3;
-# var = 5 * 6 - 8;
-# return foo + var / 2;}"
+assert 14 "int main(){ 
+int foo;
+int var;
+foo = 3;
+var = 5 * 6 - 8;
+return foo + var / 2;}"
 
 assert 3 "int main(){
 int a;
@@ -70,12 +83,14 @@ while( a != 3 )
   a = a + 1;
 return a;
 }"
+
 assert 5 "int main(){
 int a;
 int b;
 for(a=0;a<5;a=a+1) b = 0;
 return a;
 }"
+
 assert 5 "int main(){
 int a;int b;int c;
 for(a=0;a<5;a=a+1){b=0;c=0;}
@@ -91,6 +106,7 @@ int a;int b;
 b = 0;for(a=0;a<5;a=a+1){if(a==3)b=10;}
 return b;}"
 
+#　関数の読み出し
 assert 128 "int main(){foo();return 128;}"
 assert 128 "int main(){bar(1,2);return 128;}"
 assert 128 "int main(){buz(1,2,3,4);return 128;}"

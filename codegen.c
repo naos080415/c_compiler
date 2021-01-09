@@ -16,6 +16,7 @@ void gen_lval(Node *node)
         printf("    push rax\n");
     }else if(node->kind == ND_DEREF){
         gen(node->lhs);
+        return;
     }else{
         error("代入の左辺値が変数ではありません");
     }
@@ -26,6 +27,16 @@ char *lavel_contorl(Label_keyword kind)
     int num = label_cnt[kind];
     sprintf(label_name,"%d",num);
     return label_name;
+}
+
+
+Vtype *get_type(Node *node) {
+    while(node != NULL){
+        node = node->lhs;
+        if(node->type != NULL)
+            return node->type;
+    }
+    return NULL;
 }
 
 void gen(Node *node)
@@ -39,20 +50,32 @@ void gen(Node *node)
             return;
         case ND_LVAR:   // 変数(int)
             printf("#   ND_LVAR\n");
-            gen_lval(node);
+            gen_lval(node);   
             printf("    pop rax\n");
             printf("    mov rax, [rax]\n");
             printf("    push rax\n");
             return;
         case ND_ASSIGN:     // =
             printf("#   ND_ASSIGN\n");
-            gen_lval(node->lhs);
-            gen(node->rhs);
+            Vtype *t = get_type(node);
             
-            printf("    pop rdi\n");
-            printf("    pop rax\n");
-            printf("    mov [rax], rdi\n");
-            printf("    push rdi\n");
+            if( t && t->kind == ARRAY ){
+                gen_lval(node->lhs);
+                gen(node->rhs);
+                printf("    pop rdi\n");
+                printf("    pop rax\n");
+                printf("    mov rax, rdi\n");
+                printf("    push rdi\n");
+                return;
+            }else{
+                gen_lval(node->lhs);
+                gen(node->rhs);
+                printf("    pop rdi\n");
+                printf("    pop rax\n");
+                printf("    mov [rax], rdi\n");
+                printf("    push rdi\n");
+                return;
+            }
             return;
         case ND_ADDR:       // &
             printf("#   ND_ADDR\n");
@@ -528,7 +551,12 @@ Node *variable(Token *tok)
 {
     Node *node = new_node(ND_LVAR);     
     LVar *lvar = find_lvar(tok);
-    if(lvar){
+    if(consume("[")){
+        int size = expect_number();
+        node->type = lvar->type;
+        node->offset = lvar->offset - (size * 8);
+        expect("]");
+    }else if(lvar){
         node->type = lvar->type;
         node->offset = lvar->offset;
     }else{
@@ -561,18 +589,16 @@ Node *variable_def()
         lvar->len = tok->len;
 
         int size = 1;
-
-        // 一旦,ここには雑に配列を実装する.(ポインタと配列は同時定義できない)
         if(consume("[")){
             type->kind = ARRAY;
-            int size = expect_number();
+            size = expect_number();
             expect("]");
         }
     
         if( locals == NULL )
             lvar->offset = 8 * size;
         else
-            lvar->offset = locals->offset + 8 * size;
+            lvar->offset = locals->offset + (8 * size);
 
         lvar->type = type;
         node->type = type;
