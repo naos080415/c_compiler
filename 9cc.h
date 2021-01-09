@@ -157,4 +157,6 @@ Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
+Node *function_def(Token *tok);
+Node *variable(Token *tok);
 Node *variable_def();

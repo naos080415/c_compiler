@@ -17,7 +17,10 @@ assert() {
 }
 
 # 配列
-assert 0 "int main(){int x[10];return 0;}"
+# assert 0 "int main(){
+# int x[10];
+# x[0] = 3;
+# return x[3];}"
 
 #演算子
 assert 0 "int main(){return 0;}"
@@ -45,12 +48,12 @@ assert 1 "int main(){ return 1>=0;}"
 assert 1 "int main(){ return 1>=1;}"
 assert 0 "int main(){ return 1>=2;}"
 
-assert 14 "int main(){ 
-int foo;
-int var;
-foo = 3;
-var = 5 * 6 - 8;
-return foo + var / 2;}"
+# assert 14 "int main(){ 
+# int foo;
+# int var;
+# foo = 3;
+# var = 5 * 6 - 8;
+# return foo + var / 2;}"
 
 assert 3 "int main(){
 int a;

@@ -496,39 +496,45 @@ Node *primary()
     }
     
     Token *tok = consume_ident();
-
-    if(tok){    // 数字でなければ
-        if(consume("(")){
-            // identのあとに ( があると関数とみなす.
-            node = new_node(ND_FUNC);
-            node->args = calloc(6,sizeof(Node));
-            // 関数名をnodeにわたす.
-            node->name_func = tok->str;
-
-            for(int i=0;i<6 && !consume(")");i++){
-                node->args[i] = expr();
-                 if(!consume(")"))
-                    expect(",");
-                else
-                    break;
-            }
-            return node;
-        }else{
-            // identのあとに ( がない場合,変数とみなす.
-            node = new_node(ND_LVAR);     
-            LVar *lvar = find_lvar(tok);
-            if(lvar){
-                node->type = lvar->type;
-                node->offset = lvar->offset;
-            }else{
-                error("定義されていない変数です\n");
-            }
-            return node;
+    if(tok){
+        if(consume("(")){    // identのあとに ( があると関数とみなす.
+            node = function_def(tok);
+        }else{    // identのあとに ( がない場合,変数とみなす.
+            node = variable(tok);
         }
+        return node;
     }
-
-    // そうでなければ数値のはず
     return new_node_num(expect_number());
+}
+
+Node *function_def(Token *tok)
+{
+    Node *node = new_node(ND_FUNC);
+    node->args = calloc(6,sizeof(Node));
+    // 関数名をnodeにわたす.
+    node->name_func = tok->str;
+
+    for(int i=0;i<6 && !consume(")");i++){
+        node->args[i] = expr();
+        if(!consume(")"))
+            expect(",");
+        else
+            break;
+    }
+    return node;
+}
+
+Node *variable(Token *tok)
+{
+    Node *node = new_node(ND_LVAR);     
+    LVar *lvar = find_lvar(tok);
+    if(lvar){
+        node->type = lvar->type;
+        node->offset = lvar->offset;
+    }else{
+        error("定義されていない変数です\n");
+    }
+    return node;
 }
 
 // variable_def     =  "*"? variable
@@ -553,21 +559,26 @@ Node *variable_def()
         lvar->next = locals;
         memcpy(lvar->name,tok->str,tok->len);
         lvar->len = tok->len;
-        if( locals == NULL )
-            lvar->offset = 8;
-        else
-            lvar->offset = locals->offset + 8;
-        lvar->type = type;
-        node->type = type;
-        node->offset = lvar->offset;
-        locals = lvar;
-        
+
+        int size = 1;
+
         // 一旦,ここには雑に配列を実装する.(ポインタと配列は同時定義できない)
         if(consume("[")){
             type->kind = ARRAY;
             int size = expect_number();
             expect("]");
         }
+    
+        if( locals == NULL )
+            lvar->offset = 8 * size;
+        else
+            lvar->offset = locals->offset + 8 * size;
+
+        lvar->type = type;
+        node->type = type;
+        node->offset = lvar->offset;
+        locals = lvar;
+        
         return node;
     }
 }
